@@ -1,75 +1,64 @@
-# FishScale — Full-Stack Machine Learning App
+# 🐟 FishScale — Fish Weight & Species Predictor
 
-**Business problem:** A fish market wants to price and sort fish without weighing each one by hand.
-From 5 simple tape measurements, the app predicts:
+A full-stack machine learning web app that predicts a fish's **weight** and **species** from five simple body measurements.
 
-1. **Weight** of the fish in grams → *Linear Regression* (R² ≈ 0.90)
-2. **Species** of the fish (Bream, Pike, Perch, Roach, Smelt, Parkki, Whitefish) → *Logistic Regression* (accuracy ≈ 94%)
+## 📌 Business Problem
+Fish markets and processing plants handle thousands of fish every day. Each fish must be **weighed** (price depends on weight) and **identified** (every species has a different price per kg and is packed separately). Doing this by hand is slow, labour-intensive and error-prone.
 
-**Dataset:** [Fish Market — Kaggle](https://www.kaggle.com/datasets/vipullrathod/fish-market) (159 fish, 1 bad row with weight 0 removed). Included at `ml/data/Fish.csv`.
+**FishScale** solves this: enter a fish's measurements and two ML models instantly return its weight and species, so the business can **price and sort fish faster, with fewer workers and fewer mistakes**.
 
-| Column | Meaning |
-|---|---|
-| Species | Fish type (classification target) |
-| Weight | Weight in grams (regression target) |
-| Length1, Length2, Length3 | Vertical, diagonal and cross length in cm |
-| Height, Width | Height and width in cm |
+## 📊 Dataset
+[Fish Market — Kaggle](https://www.kaggle.com/datasets/vipullrathod/fish-market): 159 fish across 7 species (Bream, Perch, Pike, Roach, Smelt, Parkki, Whitefish). One row with weight = 0 was removed as a data error.
 
-## Tech
-- **ML:** scikit-learn, joblib
-- **Backend:** Python FastAPI — `POST /predict/regression`, `POST /predict/classification`
-- **Frontend:** Next.js + React — a form for each model, sample fish buttons, live mode, prediction history
+| Column | Description | Role |
+|---|---|---|
+| Species | Type of fish | Classification target |
+| Weight | Weight in grams | Regression target |
+| Length1 / Length2 / Length3 | Vertical, diagonal and cross length (cm) | Input |
+| Height / Width | Body height and thickness (cm) | Input |
 
-## Project structure
-```
-fish-market-ml-app/
-├── ml/
-│   ├── data/Fish.csv
-│   └── train_models.py      # trains, prints R² and accuracy, saves models
-├── backend/
-│   ├── main.py              # FastAPI app
-│   ├── requirements.txt
-│   └── models/              # saved .joblib files + scores.json
-└── frontend/                # Next.js app
-```
+## 🤖 Machine Learning Models
+| Task | Model | Predicts | Result |
+|---|---|---|---|
+| Regression | Linear Regression | Weight (g) | **R² = 0.904** |
+| Classification | Logistic Regression | Species | **Accuracy = 93.8%** |
 
-## How to run
-Needs **Python 3.10+** and **Node.js 18+**.
+Data is split 80% train / 20% test. Trained models are saved with `joblib` and served by the backend.
 
-**1. Install Python packages**
+## 🛠️ Tech Stack
+- **ML:** Python, pandas, scikit-learn, joblib
+- **Backend:** FastAPI + Uvicorn (REST API returning JSON)
+- **Frontend:** Next.js + React (interactive sliders, sample fish, live predictions, history)
+
+## 💡 Real-World Value & Future Scope
+- **Faster operations:** instant weight and species without manual weighing or expert identification.
+- **Lower costs and fewer errors** in sorting and pricing; price = predicted weight × species rate.
+- **Computer vision integration:** a camera on a conveyor belt (or underwater in a fish farm) can measure each fish automatically and send the measurements to this API. The camera acts as the *eyes*, and FishScale is the *brain*, enabling fully automated, contact-free sorting and stock monitoring.
+
+## 🚀 How to Run
+**Requirements:** Python 3.10+ and Node.js 18+
+
 ```bash
+# 1. Install Python packages and train the models
 cd backend
 pip install -r requirements.txt
-```
-
-**2. Train the models**
-```bash
 cd ../ml
 python train_models.py
-```
 
-**3. Start the backend** (terminal 1)
-```bash
+# 2. Start the backend (http://localhost:8000/docs)
 cd ../backend
-uvicorn main:app --reload --port 8000
-```
-API docs: http://localhost:8000/docs
+python -m uvicorn main:app --reload --port 8000
 
-**4. Start the frontend** (terminal 2)
-```bash
+# 3. In a new terminal, start the frontend
 cd frontend
 npm install
 npm run dev
 ```
-Open http://localhost:3000
+Open **http://localhost:3000** in your browser.
 
-## API example
-```http
-POST /predict/regression
-{ "Length1": 30.4, "Length2": 33.0, "Length3": 38.5, "Height": 15.0, "Width": 5.3 }
-→ { "predicted_weight": 597.4 }
-
-POST /predict/classification
-{ "Length1": 30.4, "Length2": 33.0, "Length3": 38.5, "Height": 15.0, "Width": 5.3 }
-→ { "predicted_species": "Bream", "confidence": 0.993 }
+## 📁 Project Structure
+```
+├── ml/          # dataset + train_models.py
+├── backend/     # FastAPI app + saved models
+└── frontend/    # Next.js website
 ```
